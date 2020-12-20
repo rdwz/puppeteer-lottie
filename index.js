@@ -54,6 +54,7 @@ const injectLottie = `
  * @param {string} [opts.inject.style] - Optionally injected into a <style> tag within the document <head>
  * @param {string} [opts.inject.body] - Optionally injected into the document <body>
  * @param {object} [opts.browser] - Optional puppeteer instance to reuse
+ * @param {object} [opts.frame] - Optional puppeteer to select frame for screenshoot
  *
  * @return {Promise}
  */
@@ -355,14 +356,18 @@ ${inject.body || ''}
       ffmpegStdin = stdin
     })
   }
-
+  const renderFrame = opts.frame || 75
   for (let frame = 0; frame < numFrames; ++frame) {
     const frameOutputPath = isMultiFrame
       ? sprintf(tempOutput, frame + 1)
       : tempOutput
 
     // eslint-disable-next-line no-undef
-    await page.evaluate((frame) => animation.goToAndStop(frame, true), frame)
+    await page.evaluate((frame) => {
+      // eslint-disable-next-line no-undef
+      animation.goToAndStop(frame, true)
+    }, renderFrame)
+
     const screenshot = await rootHandle.screenshot({
       path: isMp4 ? undefined : frameOutputPath,
       ...screenshotOpts
