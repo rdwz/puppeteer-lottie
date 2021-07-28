@@ -366,7 +366,7 @@ ${inject.body || ''}
     await page.evaluate((frame) => {
       // eslint-disable-next-line no-undef
       animation.goToAndStop(frame, true)
-    }, renderFrame)
+    }, isMultiFrame ? frame : renderFrame)
 
     const screenshot = await rootHandle.screenshot({
       path: isMp4 ? undefined : frameOutputPath,
