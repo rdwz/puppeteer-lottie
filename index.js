@@ -55,6 +55,9 @@ const injectLottie = `
  * @param {string} [opts.inject.body] - Optionally injected into the document <body>
  * @param {object} [opts.browser] - Optional puppeteer instance to reuse
  * @param {object} [opts.frame] - Optional puppeteer to select frame for screenshoot
+ * @param {object} [opts.inFrame] - Optional puppeteer to select frame for paused In Frame
+ * @param {object} [opts.outFrame] - Optional puppeteer to select frame for play Out Frame
+ * @param {object} [opts.customDuration] - Optional puppeteer to custom duration of lottie
  *
  * @return {Promise}
  */
@@ -259,8 +262,9 @@ ${inject.body || ''}
   await page.setContent(html)
   await page.waitForSelector('.ready')
   const duration = await page.evaluate(() => duration)
-  const numFrames = await page.evaluate(() => numFrames)
-
+  let numFrames = await page.evaluate(() => numFrames)
+  const customDuration = opts.customDuration
+  if (customDuration) numFrames = customDuration
   const pageFrame = page.mainFrame()
   const rootHandle = await pageFrame.$('#root')
 
@@ -362,6 +366,10 @@ ${inject.body || ''}
       ? sprintf(tempOutput, frame + 1)
       : tempOutput
 
+    let customFrame = frame
+    if (customDuration && opts.inFrame && opts.outFrame) {
+      customFrame = customFrame >= opts.inFrame && customFrame <= opts.outFrame ? opts.inFrame : frame
+    }
     // eslint-disable-next-line no-undef
     await page.evaluate((frame) => {
       // eslint-disable-next-line no-undef
