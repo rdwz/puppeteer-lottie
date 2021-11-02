@@ -262,9 +262,9 @@ ${inject.body || ''}
   await page.setContent(html)
   await page.waitForSelector('.ready')
   const duration = await page.evaluate(() => duration)
-  let numFrames = await page.evaluate(() => numFrames)
-  const customDuration = opts.customDuration
-  if (customDuration) numFrames = customDuration
+  const numFrames = await page.evaluate(() => numFrames)
+  const customDuration = opts.customDuration ? opts.customDuration : numFrames
+  // if (customDuration) numFrames = customDuration
   const pageFrame = page.mainFrame()
   const rootHandle = await pageFrame.$('#root')
 
@@ -278,7 +278,7 @@ ${inject.body || ''}
     spinnerB.succeed()
   }
 
-  const numOutputFrames = isMultiFrame ? numFrames : 1
+  const numOutputFrames = isMultiFrame ? customDuration : 1
   const framesLabel = pluralize('frame', numOutputFrames)
   const spinnerR = !quiet && ora(`Rendering ${numOutputFrames} ${framesLabel}`).start()
 
@@ -361,15 +361,18 @@ ${inject.body || ''}
     })
   }
   const renderFrame = opts.frame || 75
-  for (let frame = 0; frame < numFrames; ++frame) {
+  // for (let frame = 0; frame < numFrames; ++frame) {
+  let frame = 0
+  let customFrame = 0
+  while (frame < numFrames) {
     const frameOutputPath = isMultiFrame
       ? sprintf(tempOutput, frame + 1)
       : tempOutput
 
-    let customFrame = frame
-    if (customDuration && opts.inFrame && opts.outFrame) {
-      customFrame = customFrame >= opts.inFrame && customFrame <= opts.outFrame ? opts.inFrame : frame
-    }
+    // let customFrame = frame
+    // if (customDuration && opts.inFrame && opts.outFrame) {
+    //   customFrame = frame >= opts.inFrame && frame <= (numFrames - opts.outFrame) ? opts.inFrame : frame
+    // }
     // eslint-disable-next-line no-undef
     await page.evaluate((frame) => {
       // eslint-disable-next-line no-undef
@@ -391,7 +394,18 @@ ${inject.body || ''}
         ffmpegStdin.write(screenshot)
       }
     }
+
+    if ((customDuration && opts.inFrame && opts.outFrame) &&
+      customFrame >= opts.inFrame &&
+      customFrame <= (customDuration - (opts.outFrame - opts.inFrame))) {
+      console.log('masup sini: ' + frame, customFrame)
+    } else {
+      console.log('masup else: ' + frame, customFrame)
+      ++frame
+    }
+    ++customFrame
   }
+  // }
 
   await rootHandle.dispose()
   if (opts.browser) {
