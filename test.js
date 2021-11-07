@@ -1,10 +1,10 @@
 const renderLottie = require('./index.js')
-const duration = 20
+const duration = 10
 const frameRate = 30
 async function hajar () {
   await renderLottie({
     path: 'D:\\project\\lottie-puppeteer-fikuri\\1629950357387-wuxi-2.json',
-    output: 'D:\\project\\lottie-puppeteer-fikuri\\fikuri.mp4',
+    output: 'D:\\project\\lottie-puppeteer-fikuri\\test3.mp4',
     width: 1920,
     height: 1080,
     customDuration: duration * frameRate,

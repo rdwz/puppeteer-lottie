@@ -263,7 +263,7 @@ ${inject.body || ''}
   await page.waitForSelector('.ready')
   const duration = await page.evaluate(() => duration)
   const numFrames = await page.evaluate(() => numFrames)
-  const customDuration = opts.customDuration ? opts.customDuration : numFrames
+  const customDuration = opts.customDuration ? (opts.customDuration + numFrames) : numFrames
   // if (customDuration) numFrames = customDuration
   const pageFrame = page.mainFrame()
   const rootHandle = await pageFrame.$('#root')
@@ -364,15 +364,12 @@ ${inject.body || ''}
   // for (let frame = 0; frame < numFrames; ++frame) {
   let frame = 0
   let customFrame = 0
+  // console.log('custom duration', customDuration)
   while (frame < numFrames) {
     const frameOutputPath = isMultiFrame
       ? sprintf(tempOutput, frame + 1)
       : tempOutput
 
-    // let customFrame = frame
-    // if (customDuration && opts.inFrame && opts.outFrame) {
-    //   customFrame = frame >= opts.inFrame && frame <= (numFrames - opts.outFrame) ? opts.inFrame : frame
-    // }
     // eslint-disable-next-line no-undef
     await page.evaluate((frame) => {
       // eslint-disable-next-line no-undef
@@ -394,16 +391,16 @@ ${inject.body || ''}
         ffmpegStdin.write(screenshot)
       }
     }
-
+    ++customFrame
     if ((customDuration && opts.inFrame && opts.outFrame) &&
       customFrame >= opts.inFrame &&
-      customFrame <= (customDuration - (opts.outFrame - opts.inFrame))) {
-      console.log('masup sini: ' + frame, customFrame)
+      customFrame <= (customDuration - (numFrames - opts.inFrame))) {
+      // @Todo:
+      // console.log('custom sini dong:', customFrame, frame)
     } else {
-      console.log('masup else: ' + frame, customFrame)
       ++frame
+      // console.log('frame biasa sana lah :', customFrame, frame)
     }
-    ++customFrame
   }
   // }
 
