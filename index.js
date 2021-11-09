@@ -213,7 +213,6 @@ ${inject.body || ''}
   let animation = null
   let duration
   let numFrames
-
   function onReady () {
     animation = lottie.loadAnimation({
       container: document.getElementById('root'),
@@ -248,7 +247,6 @@ ${inject.body || ''}
     ...puppeteerOptions
   })
   const page = await browser.newPage()
-
   if (!quiet) {
     page.on('console', console.log.bind(console))
     page.on('error', console.error.bind(console))
@@ -378,7 +376,13 @@ ${inject.body || ''}
 
     const screenshot = await rootHandle.screenshot({
       path: isMp4 ? undefined : frameOutputPath,
-      ...screenshotOpts
+      ...screenshotOpts,
+      clip: {
+        x: 0,
+        y: 0,
+        width,
+        height
+      }
     })
 
     // single screenshot
