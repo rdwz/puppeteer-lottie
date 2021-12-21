@@ -58,6 +58,7 @@ const injectLottie = `
  * @param {object} [opts.inFrame] - Optional puppeteer to select frame for paused In Frame
  * @param {object} [opts.outFrame] - Optional puppeteer to select frame for play Out Frame
  * @param {object} [opts.customDuration] - Optional puppeteer to custom duration of lottie
+ * @param {object} [opts.isImageSequence] - Optional puppeteer to customIsImageSequences
  *
  * @return {Promise}
  */
@@ -118,10 +119,10 @@ module.exports = async (opts) => {
   const ext = path.extname(output).slice(1).toLowerCase()
   const isApng = (ext === 'apng')
   const isGif = (ext === 'gif')
-  const isMp4 = (ext === 'mp4')
+  const isMp4 = (ext === 'mp4' || ext === 'webm')
   const isPng = (ext === 'png')
   const isJpg = (ext === 'jpg' || ext === 'jpeg')
-
+  const isSequence = opts && opts.isImageSequence ? opts.isImageSequence : false
   if (!(isApng || isGif || isMp4 || isPng || isJpg)) {
     throw new Error(`Unsupported output format "${output}"`)
   }
@@ -259,6 +260,8 @@ ${inject.body || ''}
   })
   await page.setContent(html)
   await page.waitForSelector('.ready')
+  // await page.waitForSelector('img')
+  // await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 0 })
   const duration = await page.evaluate(() => duration)
   const numFrames = await page.evaluate(() => numFrames)
   const customDuration = opts.customDuration ? (opts.customDuration + numFrames) : numFrames
@@ -335,7 +338,7 @@ ${inject.body || ''}
 
       ffmpeg = spawn(process.env.FFMPEG_PATH || 'ffmpeg', ffmpegArgs)
       const { stdin, stdout, stderr } = ffmpeg
-
+      console.log('fikrui: ', ffmpegArgs.join(' '))
       if (!quiet) {
         stdout.pipe(process.stdout)
       }
@@ -364,16 +367,16 @@ ${inject.body || ''}
   let customFrame = 0
   // console.log('custom duration', customDuration)
   while (frame < numFrames) {
-    const frameOutputPath = isMultiFrame
+    let frameOutputPath = isMultiFrame
       ? sprintf(tempOutput, frame + 1)
       : tempOutput
-
+    frameOutputPath = isSequence ? [frameOutputPath.slice(0, frameOutputPath.length - 4), `_${frame}`, frameOutputPath.slice(frameOutputPath.length - 4)].join('') : frameOutputPath
     // eslint-disable-next-line no-undef
     await page.evaluate((frame) => {
       // eslint-disable-next-line no-undef
       animation.goToAndStop(frame, true)
-    }, isMultiFrame ? frame : renderFrame)
-
+    }, isMultiFrame || isSequence ? frame : renderFrame)
+    // await page.waitForSelector('image')
     const screenshot = await rootHandle.screenshot({
       path: isMp4 ? undefined : frameOutputPath,
       ...screenshotOpts,
@@ -386,7 +389,7 @@ ${inject.body || ''}
     })
 
     // single screenshot
-    if (!isMultiFrame) {
+    if (!isMultiFrame && !isSequence) {
       break
     }
 
@@ -445,7 +448,6 @@ ${inject.body || ''}
 
     const executable = process.env.GIFSKI_PATH || 'gifski'
     const cmd = [ executable ].concat(params).join(' ')
-
     await execa.shell(cmd)
 
     if (spinnerG) {
