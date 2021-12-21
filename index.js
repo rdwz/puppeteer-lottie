@@ -370,13 +370,13 @@ ${inject.body || ''}
     let frameOutputPath = isMultiFrame
       ? sprintf(tempOutput, frame + 1)
       : tempOutput
-    frameOutputPath = isSequence ? [frameOutputPath.slice(0, frameOutputPath.length - 4), `_${frame}`, frameOutputPath.slice(frameOutputPath.length - 4)].join('') : frameOutputPath
+    frameOutputPath = isSequence ? [frameOutputPath.slice(0, frameOutputPath.length - 4), `_${customFrame}`, frameOutputPath.slice(frameOutputPath.length - 4)].join('') : frameOutputPath
     // eslint-disable-next-line no-undef
     await page.evaluate((frame) => {
       // eslint-disable-next-line no-undef
       animation.goToAndStop(frame, true)
     }, isMultiFrame || isSequence ? frame : renderFrame)
-    // await page.waitForSelector('image')
+    await page.waitForSelector('image')
     const screenshot = await rootHandle.screenshot({
       path: isMp4 ? undefined : frameOutputPath,
       ...screenshotOpts,

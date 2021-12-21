@@ -1,5 +1,5 @@
 const renderLottie = require('./index.js')
-const duration = 2
+const duration = 3
 const frameRate = 30
 async function hajar () {
   const injectBgColor = `body { 
