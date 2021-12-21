@@ -334,11 +334,11 @@ ${inject.body || ''}
         '-an', output
       )
 
-      console.log(ffmpegArgs.join(' '))
+      // console.log(ffmpegArgs.join(' '))
 
       ffmpeg = spawn(process.env.FFMPEG_PATH || 'ffmpeg', ffmpegArgs)
       const { stdin, stdout, stderr } = ffmpeg
-      console.log('fikrui: ', ffmpegArgs.join(' '))
+      // console.log('fikrui: ', ffmpegArgs.join(' '))
       if (!quiet) {
         stdout.pipe(process.stdout)
       }
@@ -365,18 +365,22 @@ ${inject.body || ''}
   // for (let frame = 0; frame < numFrames; ++frame) {
   let frame = 0
   let customFrame = 0
+  let frameNumber = 0
   // console.log('custom duration', customDuration)
   while (frame < numFrames) {
     let frameOutputPath = isMultiFrame
       ? sprintf(tempOutput, frame + 1)
       : tempOutput
-    frameOutputPath = isSequence ? [frameOutputPath.slice(0, frameOutputPath.length - 4), `_${customFrame}`, frameOutputPath.slice(frameOutputPath.length - 4)].join('') : frameOutputPath
+    frameOutputPath = isSequence ? [frameOutputPath.slice(0, frameOutputPath.length - 4), `_${frameNumber}`, frameOutputPath.slice(frameOutputPath.length - 4)].join('') : frameOutputPath
+    // console.log(frameOutputPath)
     // eslint-disable-next-line no-undef
     await page.evaluate((frame) => {
       // eslint-disable-next-line no-undef
       animation.goToAndStop(frame, true)
     }, isMultiFrame || isSequence ? frame : renderFrame)
+
     await page.waitForSelector('image')
+
     const screenshot = await rootHandle.screenshot({
       path: isMp4 ? undefined : frameOutputPath,
       ...screenshotOpts,
@@ -408,6 +412,7 @@ ${inject.body || ''}
       ++frame
       // console.log('frame biasa sana lah :', customFrame, frame)
     }
+    frameNumber++
   }
   // }
 

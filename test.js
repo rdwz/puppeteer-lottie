@@ -17,7 +17,7 @@ async function hajar () {
     // lottieWidth: 3413,
     // lottieHeight: 1920,
     // frame: 140,
-    customDuration: duration * frameRate,
+    customDuration: 375,
     inFrame: 140,
     outFrame: 240,
     omitBackground: true,
