@@ -379,7 +379,7 @@ ${inject.body || ''}
       animation.goToAndStop(frame, true)
     }, isMultiFrame || isSequence ? frame : renderFrame)
 
-    await page.waitForSelector('image')
+    // await page.waitForSelector('image')
 
     const screenshot = await rootHandle.screenshot({
       path: isMp4 ? undefined : frameOutputPath,
