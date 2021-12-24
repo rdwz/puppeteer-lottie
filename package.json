@@ -1,6 +1,6 @@
 {
   "name": "lottie-puppeteer-fikuri",
-  "version": "2.2.4",
+  "version": "2.2.5",
   "description": "Renders Lottie animations via Puppeteer to image, GIF, or MP4.",
   "main": "index.js",
   "repository": "fikri2992/puppeteer-lottie",
