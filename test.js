@@ -1,6 +1,6 @@
 const renderLottie = require('./index.js')
-const duration = 3
-const frameRate = 30
+// const duration = 3
+// const frameRate = 30
 async function hajar () {
   const injectBgColor = `body { 
       background:transparent;
@@ -8,18 +8,19 @@ async function hajar () {
   const injectStyle = {
     style: injectBgColor
   }
+  // eslint-disable-next-line promise/param-names
+  // const timeout = ms => new Promise(res => setTimeout(res, ms))
+  // for (let index = 0; index < 3; index++) {
+  // await timeout(5000)
   await renderLottie({
-    path: 'D:\\project\\lottie-puppeteer-fikuri\\wuxi.json',
-    output: 'D:\\project\\lottie-puppeteer-fikuri\\test3.png',
+    path: './quotes.json',
+    output: `./test.mp4`,
     width: 1920,
     height: 1080,
-    isImageSequence: true,
+    isImageSequence: false,
     // lottieWidth: 3413,
     // lottieHeight: 1920,
-    // frame: 140,
-    customDuration: 375,
-    inFrame: 140,
-    outFrame: 240,
+    // frame: 148,
     omitBackground: true,
     inject: injectStyle,
     // style: {
@@ -28,7 +29,7 @@ async function hajar () {
     //   transform: 'translate(-1167px, -9px)'
     // },
     puppeteerOptions: {
-      headless: true,
+      headless: false,
       args: ['--no-sandbox', '--auto-open-devtools-for-tabs']
     },
     rendererSettings: {
@@ -42,6 +43,7 @@ async function hajar () {
       }
     }
   })
+  // }
 }
 
 hajar()

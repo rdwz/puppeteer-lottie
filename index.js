@@ -214,6 +214,7 @@ ${inject.body || ''}
   let animation = null
   let duration
   let numFrames
+  let executeOnce = 0
   function onReady () {
     animation = lottie.loadAnimation({
       container: document.getElementById('root'),
@@ -223,13 +224,14 @@ ${inject.body || ''}
       rendererSettings: ${JSON.stringify(rendererSettings)},
       animationData
     })
-
+    
     duration = animation.getDuration()
     numFrames = animation.getDuration(true)
 
     var div = document.createElement('div')
     div.className = 'ready'
     document.body.appendChild(div)
+    
   }
 
   document.addEventListener('DOMContentLoaded', onReady)
@@ -376,10 +378,23 @@ ${inject.body || ''}
     // eslint-disable-next-line no-undef
     await page.evaluate((frame) => {
       // eslint-disable-next-line no-undef
+      if (executeOnce === 0) {
+        // eslint-disable-next-line no-undef
+        for (let crf = 0; crf < animation.renderer.elements.length; crf++) {
+          // eslint-disable-next-line eqeqeq
+          if ((animationData.layers[crf].nm).substr(5, 3) == 'txt') {
+            if (animationData.layers[crf].t.d.k[0].s.sz !== undefined) {
+              // eslint-disable-next-line no-undef
+              animation.renderer.elements[crf].canResizeFont(true)
+            }
+          }
+        }
+        // eslint-disable-next-line no-undef
+        executeOnce++
+      }
+      // eslint-disable-next-line no-undef
       animation.goToAndStop(frame, true)
     }, isMultiFrame || isSequence ? frame : renderFrame)
-
-    // await page.waitForSelector('image')
 
     const screenshot = await rootHandle.screenshot({
       path: isMp4 ? undefined : frameOutputPath,
