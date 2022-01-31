@@ -29,7 +29,7 @@ async function hajar () {
     //   transform: 'translate(-1167px, -9px)'
     // },
     puppeteerOptions: {
-      headless: false,
+      headless: true,
       args: ['--no-sandbox', '--auto-open-devtools-for-tabs']
     },
     rendererSettings: {
