@@ -405,13 +405,10 @@ ${inject.body || ''}
         maxProgress: numFrames
       }
       // Default options are marked with *
-      await axios(progressUrl, {
-        method: 'GET', // *GET, POST, PUT, DELETE, etc.
+      await axios.post(progressUrl, progressData, {
         headers: {
           'Content-Type': 'application/json'
-          // 'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: progressData // body data type must match "Content-Type" header
+        }
       })
     }
     const screenshot = await rootHandle.screenshot({
