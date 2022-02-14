@@ -14,7 +14,7 @@ const { sprintf } = require('sprintf-js')
 const { cssifyObject } = require('css-in-js-utils')
 
 const lottieScript = fs.readFileSync(require.resolve('lottie-web/build/player/lottie.min'), 'utf8')
-
+const fetch = require('node-fetch')
 const injectLottie = `
 <script>
   ${lottieScript}
@@ -53,12 +53,13 @@ const injectLottie = `
  * @param {string} [opts.inject.head] - Optionally injected into the document <head>
  * @param {string} [opts.inject.style] - Optionally injected into a <style> tag within the document <head>
  * @param {string} [opts.inject.body] - Optionally injected into the document <body>
- * @param {object} [opts.browser] - Optional puppeteer instance to reuse
- * @param {object} [opts.frame] - Optional puppeteer to select frame for screenshoot
- * @param {object} [opts.inFrame] - Optional puppeteer to select frame for paused In Frame
- * @param {object} [opts.outFrame] - Optional puppeteer to select frame for play Out Frame
- * @param {object} [opts.customDuration] - Optional puppeteer to custom duration of lottie
- * @param {object} [opts.isImageSequence] - Optional puppeteer to customIsImageSequences
+ * @param {number} [opts.browser] - Optional puppeteer instance to reuse
+ * @param {number} [opts.frame] - Optional puppeteer to select frame for screenshoot
+ * @param {number} [opts.inFrame] - Optional puppeteer to select frame for paused In Frame
+ * @param {number} [opts.outFrame] - Optional puppeteer to select frame for play Out Frame
+ * @param {number} [opts.customDuration] - Optional puppeteer to custom duration of lottie
+ * @param {boolean} [opts.isImageSequence] - Optional puppeteer to customIsImageSequences
+ * @param {string} [opts.progressUrl] - Optional puppeteer to customIsImageSequences
  *
  * @return {Promise}
  */
@@ -235,6 +236,7 @@ ${inject.body || ''}
   }
 
   document.addEventListener('DOMContentLoaded', onReady)
+
 </script>
 
 </body>
@@ -260,10 +262,10 @@ ${inject.body || ''}
     width,
     height
   })
+  // await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 0 })
   await page.setContent(html)
   await page.waitForSelector('.ready')
   // await page.waitForSelector('img')
-  // await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 0 })
   const duration = await page.evaluate(() => duration)
   const numFrames = await page.evaluate(() => numFrames)
   const customDuration = opts.customDuration ? (opts.customDuration + numFrames) : numFrames
@@ -368,6 +370,7 @@ ${inject.body || ''}
   let frame = 0
   let customFrame = 0
   let frameNumber = 0
+  const progressUrl = opts.progressUrl || null
   // console.log('custom duration', customDuration)
   while (frame < numFrames) {
     let frameOutputPath = isMultiFrame
@@ -375,6 +378,7 @@ ${inject.body || ''}
       : tempOutput
     frameOutputPath = isSequence ? [frameOutputPath.slice(0, frameOutputPath.length - 4), `_${frameNumber}`, frameOutputPath.slice(frameOutputPath.length - 4)].join('') : frameOutputPath
     // console.log(frameOutputPath)
+
     // eslint-disable-next-line no-undef
     await page.evaluate((frame) => {
       // eslint-disable-next-line no-undef
@@ -395,7 +399,21 @@ ${inject.body || ''}
       // eslint-disable-next-line no-undef
       animation.goToAndStop(frame, true)
     }, isMultiFrame || isSequence ? frame : renderFrame)
-
+    if (progressUrl) {
+      const progressData = {
+        progress: frame,
+        maxProgress: numFrames
+      }
+      // Default options are marked with *
+      await fetch(progressUrl, {
+        method: 'GET', // *GET, POST, PUT, DELETE, etc.
+        headers: {
+          'Content-Type': 'application/json'
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: progressData // body data type must match "Content-Type" header
+      })
+    }
     const screenshot = await rootHandle.screenshot({
       path: isMp4 ? undefined : frameOutputPath,
       ...screenshotOpts,

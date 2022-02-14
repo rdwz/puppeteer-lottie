@@ -13,14 +13,14 @@ async function hajar () {
   // for (let index = 0; index < 3; index++) {
   // await timeout(5000)
   await renderLottie({
-    path: './quotes.json',
-    output: `./test.mp4`,
+    path: './BiteSceneX.json',
+    output: `./contoh.mp4`,
     width: 1920,
     height: 1080,
     isImageSequence: false,
     // lottieWidth: 3413,
     // lottieHeight: 1920,
-    // frame: 148,
+    // frame: 1219,
     omitBackground: true,
     inject: injectStyle,
     // style: {
