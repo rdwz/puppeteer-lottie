@@ -60,6 +60,8 @@ const injectLottie = `
  * @param {number} [opts.customDuration] - Optional puppeteer to custom duration of lottie
  * @param {boolean} [opts.isImageSequence] - Optional puppeteer to customIsImageSequences
  * @param {string} [opts.progressUrl] - Optional puppeteer to customIsImageSequences
+ * @param {string} [opts.progressInterval] - Optional puppeteer to customIsImageSequences
+ *
  *
  * @return {Promise}
  */
@@ -371,6 +373,8 @@ ${inject.body || ''}
   let customFrame = 0
   let frameNumber = 0
   const progressUrl = opts.progressUrl || null
+  const progressInterval = opts.progressInterval || 100
+
   // console.log('custom duration', customDuration)
   while (frame < numFrames) {
     let frameOutputPath = isMultiFrame
@@ -399,7 +403,7 @@ ${inject.body || ''}
       // eslint-disable-next-line no-undef
       animation.goToAndStop(frame, true)
     }, isMultiFrame || isSequence ? frame : renderFrame)
-    if (progressUrl && frame % 10 === 0) {
+    if (progressUrl && frame % progressInterval === 0) {
       const progressData = {
         progress: frame,
         maxProgress: numFrames
