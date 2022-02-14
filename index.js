@@ -14,7 +14,7 @@ const { sprintf } = require('sprintf-js')
 const { cssifyObject } = require('css-in-js-utils')
 
 const lottieScript = fs.readFileSync(require.resolve('lottie-web/build/player/lottie.min'), 'utf8')
-const fetch = require('node-fetch')
+const axios = require('axios')
 const injectLottie = `
 <script>
   ${lottieScript}
@@ -405,7 +405,7 @@ ${inject.body || ''}
         maxProgress: numFrames
       }
       // Default options are marked with *
-      await fetch(progressUrl, {
+      await axios(progressUrl, {
         method: 'GET', // *GET, POST, PUT, DELETE, etc.
         headers: {
           'Content-Type': 'application/json'
