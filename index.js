@@ -399,7 +399,7 @@ ${inject.body || ''}
       // eslint-disable-next-line no-undef
       animation.goToAndStop(frame, true)
     }, isMultiFrame || isSequence ? frame : renderFrame)
-    if (progressUrl) {
+    if (progressUrl && frame % 10 === 0) {
       const progressData = {
         progress: frame,
         maxProgress: numFrames
