@@ -59,10 +59,10 @@ const injectLottie = `
  * @param {number} [opts.outFrame] - Optional puppeteer to select frame for play Out Frame
  * @param {number} [opts.customDuration] - Optional puppeteer to custom duration of lottie
  * @param {boolean} [opts.isImageSequence] - Optional puppeteer to customIsImageSequences
- * @param {string} [opts.progressUrl] - Optional puppeteer to customIsImageSequences
- * @param {string} [opts.progressInterval] - Optional puppeteer to customIsImageSequences
- *
- *
+ * @param {string} [opts.progressUrl] - Optional puppeteer to custom progress url
+ * @param {string} [opts.progressInterval] - Optional puppeteer to custom interval for progress url
+ * @param {boolean} [opts.isCarousel] - Optional puppeteer to custom render carousel
+ * @param {array} [opts.carouselFrames] - Optional puppeteer to number of frame
  * @return {Promise}
  */
 module.exports = async (opts) => {
@@ -126,6 +126,9 @@ module.exports = async (opts) => {
   const isPng = (ext === 'png')
   const isJpg = (ext === 'jpg' || ext === 'jpeg')
   const isSequence = opts && opts.isImageSequence ? opts.isImageSequence : false
+  const isCarousel = opts && opts.isCarousel ? opts.isCarousel : false
+  const carouselFrames = opts && opts.carouselFrames ? opts.carouselFrames : []
+
   if (!(isApng || isGif || isMp4 || isPng || isJpg)) {
     throw new Error(`Unsupported output format "${output}"`)
   }
@@ -375,79 +378,139 @@ ${inject.body || ''}
   const progressUrl = opts.progressUrl || null
   const progressInterval = opts.progressInterval || 100
 
-  // console.log('custom duration', customDuration)
-  while (frame < numFrames) {
-    let frameOutputPath = isMultiFrame
-      ? sprintf(tempOutput, frame + 1)
-      : tempOutput
-    frameOutputPath = isSequence ? [frameOutputPath.slice(0, frameOutputPath.length - 4), `_${frameNumber}`, frameOutputPath.slice(frameOutputPath.length - 4)].join('') : frameOutputPath
-    // console.log(frameOutputPath)
-
-    // eslint-disable-next-line no-undef
-    await page.evaluate((frame) => {
+  if (isCarousel && carouselFrames.length > 0) {
+    // console.log('custom duration', customDuration)
+    console.log(carouselFrames.length)
+    while (frame < carouselFrames.length) {
+      let frameOutputPath = isMultiFrame
+        ? sprintf(tempOutput, frame + 1)
+        : tempOutput
+      frameOutputPath = [frameOutputPath.slice(0, frameOutputPath.length - 4), `_${frame + 1}`, frameOutputPath.slice(frameOutputPath.length - 4)].join('')
+      // console.log(frameOutputPath)
       // eslint-disable-next-line no-undef
-      if (executeOnce === 0) {
+      await page.evaluate((frame) => {
         // eslint-disable-next-line no-undef
-        for (let crf = 0; crf < animation.renderer.elements.length; crf++) {
-          // eslint-disable-next-line eqeqeq
-          if ((animationData.layers[crf].nm).substr(5, 3) == 'txt') {
-            if (animationData.layers[crf].t.d.k[0].s.sz !== undefined) {
-              // eslint-disable-next-line no-undef
-              animation.renderer.elements[crf].canResizeFont(true)
+        if (executeOnce === 0) {
+          // eslint-disable-next-line no-undef
+          for (let crf = 0; crf < animation.renderer.elements.length; crf++) {
+            // eslint-disable-next-line eqeqeq
+            if ((animationData.layers[crf].nm).substr(5, 3) == 'txt') {
+              if (animationData.layers[crf].t.d.k[0].s.sz !== undefined) {
+                // eslint-disable-next-line no-undef
+                animation.renderer.elements[crf].canResizeFont(true)
+              }
             }
           }
+          // eslint-disable-next-line no-undef
+          executeOnce++
         }
         // eslint-disable-next-line no-undef
-        executeOnce++
+        animation.goToAndStop(frame, true)
+      }, carouselFrames[frame])
+
+      if (progressUrl && frame % progressInterval === 0) {
+        const progressData = {
+          progress: frame,
+          maxProgress: numFrames
+        }
+        // Default options are marked with *
+        await axios.post(progressUrl, progressData, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
       }
-      // eslint-disable-next-line no-undef
-      animation.goToAndStop(frame, true)
-    }, isMultiFrame || isSequence ? frame : renderFrame)
-    if (progressUrl && frame % progressInterval === 0) {
-      const progressData = {
-        progress: frame,
-        maxProgress: numFrames
-      }
-      // Default options are marked with *
-      await axios.post(progressUrl, progressData, {
-        headers: {
-          'Content-Type': 'application/json'
+
+      await rootHandle.screenshot({
+        path: frameOutputPath,
+        ...screenshotOpts,
+        clip: {
+          x: 0,
+          y: 0,
+          width,
+          height
         }
       })
+      frame++
     }
-    const screenshot = await rootHandle.screenshot({
-      path: isMp4 ? undefined : frameOutputPath,
-      ...screenshotOpts,
-      clip: {
-        x: 0,
-        y: 0,
-        width,
-        height
-      }
-    })
+  } else {
+    // console.log('custom duration', customDuration)
+    while (frame < numFrames) {
+      let frameOutputPath = isMultiFrame
+        ? sprintf(tempOutput, frame + 1)
+        : tempOutput
+      frameOutputPath = isSequence ? [frameOutputPath.slice(0, frameOutputPath.length - 4), `_${frameNumber}`, frameOutputPath.slice(frameOutputPath.length - 4)].join('') : frameOutputPath
+      // console.log(frameOutputPath)
 
-    // single screenshot
-    if (!isMultiFrame && !isSequence) {
-      break
-    }
+      // eslint-disable-next-line no-undef
+      await page.evaluate((frame) => {
+        // eslint-disable-next-line no-undef
+        if (executeOnce === 0) {
+          // eslint-disable-next-line no-undef
+          for (let crf = 0; crf < animation.renderer.elements.length; crf++) {
+            // eslint-disable-next-line eqeqeq
+            if ((animationData.layers[crf].nm).substr(5, 3) == 'txt') {
+              if (animationData.layers[crf].t.d.k[0].s.sz !== undefined) {
+                // eslint-disable-next-line no-undef
+                animation.renderer.elements[crf].canResizeFont(true)
+              }
+            }
+          }
+          // eslint-disable-next-line no-undef
+          executeOnce++
+        }
+        // eslint-disable-next-line no-undef
+        animation.goToAndStop(frame, true)
+      }, isMultiFrame || isSequence ? frame : renderFrame)
 
-    if (isApng || isMp4) {
-      if (ffmpegStdin.writable) {
-        ffmpegStdin.write(screenshot)
+      if (progressUrl && frame % progressInterval === 0) {
+        const progressData = {
+          progress: frame,
+          maxProgress: numFrames
+        }
+        // Default options are marked with *
+        await axios.post(progressUrl, progressData, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
       }
+
+      const screenshot = await rootHandle.screenshot({
+        path: isMp4 ? undefined : frameOutputPath,
+        ...screenshotOpts,
+        clip: {
+          x: 0,
+          y: 0,
+          width,
+          height
+        }
+      })
+
+      // single screenshot
+      if (!isMultiFrame && !isSequence) {
+        break
+      }
+
+      if (isApng || isMp4) {
+        if (ffmpegStdin.writable) {
+          ffmpegStdin.write(screenshot)
+        }
+      }
+      ++customFrame
+      if ((customDuration && opts.inFrame && opts.outFrame) &&
+        customFrame >= opts.inFrame &&
+        customFrame <= (customDuration - (numFrames - opts.inFrame))) {
+        // @Todo:
+        // console.log('custom sini dong:', customFrame, frame)
+      } else {
+        ++frame
+        // console.log('frame biasa sana lah :', customFrame, frame)
+      }
+      frameNumber++
     }
-    ++customFrame
-    if ((customDuration && opts.inFrame && opts.outFrame) &&
-      customFrame >= opts.inFrame &&
-      customFrame <= (customDuration - (numFrames - opts.inFrame))) {
-      // @Todo:
-      // console.log('custom sini dong:', customFrame, frame)
-    } else {
-      ++frame
-      // console.log('frame biasa sana lah :', customFrame, frame)
-    }
-    frameNumber++
   }
+
   // }
 
   await rootHandle.dispose()
