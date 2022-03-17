@@ -63,6 +63,8 @@ const injectLottie = `
  * @param {string} [opts.progressInterval] - Optional puppeteer to custom interval for progress url
  * @param {boolean} [opts.isCarousel] - Optional puppeteer to custom render carousel
  * @param {array} [opts.carouselFrames] - Optional puppeteer to number of frame
+ * @param {array} [opts.customMaxDuration] - Optional puppeteer to number of maximal frame
+ *
  * @return {Promise}
  */
 module.exports = async (opts) => {
@@ -272,7 +274,8 @@ ${inject.body || ''}
   await page.waitForSelector('.ready')
   // await page.waitForSelector('img')
   const duration = await page.evaluate(() => duration)
-  const numFrames = await page.evaluate(() => numFrames)
+  let numFrames = await page.evaluate(() => numFrames)
+  if (opts && opts.customMaxDuration) numFrames = opts.customMaxDuration
   const customDuration = opts.customDuration ? (opts.customDuration + numFrames) : numFrames
   // if (customDuration) numFrames = customDuration
   const pageFrame = page.mainFrame()
@@ -414,11 +417,15 @@ ${inject.body || ''}
           maxProgress: numFrames
         }
         // Default options are marked with *
-        await axios.post(progressUrl, progressData, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
+        try {
+          await axios.post(progressUrl, progressData, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+        } catch (e) {
+          console.log(e)
+        }
       }
 
       await rootHandle.screenshot({
@@ -469,11 +476,15 @@ ${inject.body || ''}
           maxProgress: numFrames
         }
         // Default options are marked with *
-        await axios.post(progressUrl, progressData, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
+        try {
+          await axios.post(progressUrl, progressData, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+        } catch (e) {
+          console.log(e)
+        }
       }
 
       const screenshot = await rootHandle.screenshot({
