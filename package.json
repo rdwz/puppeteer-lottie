@@ -36,12 +36,13 @@
     "update-markdown-jsdoc": "^1.0.6"
   },
   "dependencies": {
+    "axios": "^0.21.1",
     "css-in-js-utils": "^3.0.2",
     "execa": "^1.0.0",
     "fluent-ffmpeg": "^2.1.2",
     "fs-extra": "^10.0.0",
-    "lottie-web": "^5.8.1",
-    "axios": "^0.21.1",
+    "jimp-watermark": "^1.1.0",
+    "lottie-web": "^5.9.6",
     "ora": "^4.0.3",
     "ow": "^0.17.0",
     "pluralize": "^7.0.0",

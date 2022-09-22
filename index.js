@@ -10,7 +10,6 @@ const puppeteer = require('puppeteer')
 const tempy = require('tempy')
 const { spawn } = require('child_process')
 const { sprintf } = require('sprintf-js')
-
 const { cssifyObject } = require('css-in-js-utils')
 
 const lottieScript = fs.readFileSync(require.resolve('lottie-web/build/player/lottie.min'), 'utf8')
@@ -64,6 +63,7 @@ const injectLottie = `
  * @param {boolean} [opts.isCarousel] - Optional puppeteer to custom render carousel
  * @param {array} [opts.carouselFrames] - Optional puppeteer to number of frame
  * @param {array} [opts.customMaxDuration] - Optional puppeteer to number of maximal frame
+ * @param {array} [opts.isWatermark] - Optional watermark flag
  *
  * @return {Promise}
  */
@@ -438,6 +438,7 @@ ${inject.body || ''}
           height
         }
       })
+
       frame++
     }
   } else {
