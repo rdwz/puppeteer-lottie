@@ -64,6 +64,7 @@ const injectLottie = `
  * @param {array} [opts.carouselFrames] - Optional puppeteer to number of frame
  * @param {array} [opts.customMaxDuration] - Optional puppeteer to number of maximal frame
  * @param {array} [opts.isWatermark] - Optional watermark flag
+ * @param {array} [opts.omitBackground] - Optional omitbackground flag
  *
  * @return {Promise}
  */
@@ -282,7 +283,7 @@ ${inject.body || ''}
   const rootHandle = await pageFrame.$('#root')
 
   const screenshotOpts = {
-    omitBackground: true,
+    omitBackground: opts.omitBackground,
     type: frameType,
     quality: frameType === 'jpeg' ? jpegQuality : undefined
   }
