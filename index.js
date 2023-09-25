@@ -482,7 +482,9 @@ ${inject.body || ''}
       if (progressUrl && frame % progressInterval === 0) {
         const progressData = {
           progress: frame,
-          maxProgress: numFrames
+          maxProgress: numFrames,
+          scene: opts && opts.scene ? opts.scene : 0,
+          max: opts && opts.maxScene ? opts.maxScene : 0
         }
         // Default options are marked with *
         try {
