@@ -65,6 +65,10 @@ const injectLottie = `
  * @param {array} [opts.customMaxDuration] - Optional puppeteer to number of maximal frame
  * @param {array} [opts.isWatermark] - Optional watermark flag
  * @param {array} [opts.omitBackground] - Optional omitbackground flag
+ * @param {array} [opts.scene] - Optional currentScene flag
+ * @param {array} [opts.maxScene] - Optional maximum number of scene flag
+ * @param {array} [opts.isOffset] - Optional isOffset
+ * @param {array} [opts.startOffset] - Optional startOffset
  *
  * @return {Promise}
  */
@@ -131,6 +135,8 @@ module.exports = async (opts) => {
   const isSequence = opts && opts.isImageSequence ? opts.isImageSequence : false
   const isCarousel = opts && opts.isCarousel ? opts.isCarousel : false
   const carouselFrames = opts && opts.carouselFrames ? opts.carouselFrames : []
+  const isOffset = opts && opts.isOffset ? opts.isOffset : false
+  const startOffset = opts && opts.startOffset ? opts.startOffset : 0
 
   if (!(isApng || isGif || isMp4 || isPng || isJpg)) {
     throw new Error(`Unsupported output format "${output}"`)
@@ -376,9 +382,9 @@ ${inject.body || ''}
   }
   const renderFrame = opts.frame || 75
   // for (let frame = 0; frame < numFrames; ++frame) {
-  let frame = 0
-  let customFrame = 0
-  let frameNumber = 0
+  let frame = isOffset ? startOffset : 0
+  let customFrame = isOffset ? startOffset : 0
+  let frameNumber = isOffset ? startOffset : 0
   const progressUrl = opts.progressUrl || null
   const progressInterval = opts.progressInterval || 100
 
@@ -415,7 +421,9 @@ ${inject.body || ''}
       if (progressUrl && frame % progressInterval === 0) {
         const progressData = {
           progress: frame,
-          maxProgress: numFrames
+          maxProgress: numFrames,
+          scene: opts && opts.scene ? opts.scene : 0,
+          max: opts && opts.maxScene ? opts.maxScene : 0
         }
         // Default options are marked with *
         try {
@@ -449,7 +457,6 @@ ${inject.body || ''}
         ? sprintf(tempOutput, frame + 1)
         : tempOutput
       frameOutputPath = isSequence ? [frameOutputPath.slice(0, frameOutputPath.length - 4), `_${frameNumber}`, frameOutputPath.slice(frameOutputPath.length - 4)].join('') : frameOutputPath
-      // console.log(frameOutputPath)
 
       // eslint-disable-next-line no-undef
       await page.evaluate((frame) => {
@@ -511,9 +518,7 @@ ${inject.body || ''}
         }
       }
       ++customFrame
-      if ((customDuration && opts.inFrame && opts.outFrame) &&
-        customFrame >= opts.inFrame &&
-        customFrame <= (customDuration - (numFrames - opts.inFrame))) {
+      if ((customDuration && opts.inFrame && opts.outFrame) && customFrame >= opts.inFrame && customFrame <= (customDuration - (numFrames - opts.inFrame))) {
         // @Todo:
         // console.log('custom sini dong:', customFrame, frame)
       } else {
